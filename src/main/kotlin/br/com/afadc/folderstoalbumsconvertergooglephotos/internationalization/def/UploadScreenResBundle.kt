@@ -59,7 +59,7 @@ class UploadScreenResBundle : UploadScreenResBundleTemplate(),
     override val logOnWillCreateMediaItemsFormat: String
         get() = "Creating %s medias on Google Photos..."
     override val logOnWillUploadMediaFormat: String
-        get() = "Uploading...<br><img src=\"%s\" width=\"150px\"/><br>%s..."
+        get() = "Uploading...<br><img src='%s' width='150' height='150' style='object-fit: cover;' /><br>%s..."
     override val logStartingToUploadMedias: String
         get() = "Starting to upload medias...<br>"
     override val noAlbumsDirectoriesPopUpMessage: String

@@ -365,9 +365,11 @@ class UploadScreenController(
     private fun updateMediaUploadScreenUploadLogText() {
         synchronized(mediaUploadLogList) {
             val stringBuilder = StringBuilder()
+            stringBuilder.append("<html>")
             mediaUploadLogList.forEach {
                 stringBuilder.append(it).append("<br>")
             }
+            stringBuilder.append("</html>")
 
             uploadScreen.setUploadLogTextAreaText(stringBuilder.toString())
             uploadScreen.scrollLogsViewToTheBottom()
