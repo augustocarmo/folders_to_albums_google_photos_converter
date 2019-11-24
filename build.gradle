@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'br.com.afadc.folderstoalbumsconvertergooglephotos'
-version '1.02'
+version '1.03'
 apply plugin: 'application'
 apply plugin: 'kotlin'
 apply plugin: 'java'
