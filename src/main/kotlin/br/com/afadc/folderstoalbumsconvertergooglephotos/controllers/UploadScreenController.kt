@@ -21,7 +21,7 @@ class UploadScreenController(
     private val photosLibraryClient: PhotosLibraryClient,
     private val appDatabase: AppDatabase,
     private val userEmail: String,
-    private val hdDirectoryFile: File
+    private val albumsDirectoryFile: File
 ) : IScreenController {
 
     private enum class RenderingState {
@@ -55,10 +55,10 @@ class UploadScreenController(
     init {
         uploadScreen.setUserEmail(userEmail)
 
-        uploadScreen.setHdTreeViewModel(
+        uploadScreen.setAlbumsTreeViewModel(
             DefaultTreeModel(
                 FileNodesCreator().createFrom(
-                    hdDirectoryFile,
+                    albumsDirectoryFile,
                     MediaUploader.ALL_VALID_EXTENSIONS
                 )
             )
@@ -69,7 +69,7 @@ class UploadScreenController(
                 dismiss()
             }
 
-            override fun onHdTreeViewSelectedTreePathsChanged(selectedPaths: Array<TreePath>?) {
+            override fun onAlbumsTreeViewSelectedTreePathsChanged(selectedPaths: Array<TreePath>?) {
                 updateUploadButtonText()
             }
 
@@ -188,7 +188,7 @@ class UploadScreenController(
     }
 
     private fun onBeforeSettingRenderingState() {
-        uploadScreen.setHdTreeViewScrollablePaneVisibility(false)
+        uploadScreen.setAlbumsTreeViewScrollablePaneVisibility(false)
         uploadScreen.setUploadLogTextAreaScrollablePaneVisibility(false)
         uploadScreen.setUploadButtonVisibility(false)
         uploadScreen.setCancelUploadButtonVisibility(false)
@@ -207,7 +207,7 @@ class UploadScreenController(
     }
 
     private fun applySelectingMediaRenderingState() {
-        uploadScreen.setHdTreeViewScrollablePaneVisibility(true)
+        uploadScreen.setAlbumsTreeViewScrollablePaneVisibility(true)
         uploadScreen.setUploadButtonVisibility(true)
     }
 
@@ -223,7 +223,7 @@ class UploadScreenController(
     }
 
     private fun updateUploadButtonText() {
-        val selectedTreePaths = uploadScreen.hdTreeViewSelectedTreePaths
+        val selectedTreePaths = uploadScreen.albumsTreeViewSelectedTreePaths
         if (selectedTreePaths == null || selectedTreePaths.isEmpty()) {
             uploadScreen.setUploadButtonText(resBundle.uploadMediaButtonZeroMediaCount)
 
@@ -248,7 +248,7 @@ class UploadScreenController(
     }
 
     private fun uploadSelectedMedia() {
-        val selectedTreePaths = uploadScreen.hdTreeViewSelectedTreePaths
+        val selectedTreePaths = uploadScreen.albumsTreeViewSelectedTreePaths
         if (selectedTreePaths == null || selectedTreePaths.isEmpty()) {
             Log.i(TAG, "No media to upload")
 

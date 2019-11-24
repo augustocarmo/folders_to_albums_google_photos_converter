@@ -2,7 +2,7 @@ package br.com.afadc.folderstoalbumsconvertergooglephotos.views
 
 import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.UploadScreenResBundle
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.GridBagConstraintsBuilder
-import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.HdTreeSelectionModel
+import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.AlbumsTreeSelectionModel
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
@@ -14,7 +14,7 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
 
     interface Listener {
         fun onBackButtonClicked()
-        fun onHdTreeViewSelectedTreePathsChanged(selectedPaths: Array<TreePath>?)
+        fun onAlbumsTreeViewSelectedTreePathsChanged(selectedPaths: Array<TreePath>?)
         fun onUploadButtonClicked()
         fun onCancelUploadButtonClicked()
     }
@@ -26,14 +26,14 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
 
     private val backButton: JButton
     private val userEmailLabel: JLabel
-    private val hdTreeView: JTree
-    private val hdTreeViewScrollablePane: JScrollPane
+    private val albumsTreeView: JTree
+    private val albumsTreeViewScrollablePane: JScrollPane
     private val uploadLogTextArea: JEditorPane
     private val uploadLogTextAreaScrollablePane: JScrollPane
     private val uploadButton: JButton
     private val cancelUploadButton: JButton
 
-    val hdTreeViewSelectedTreePaths: Array<TreePath>? get() = hdTreeView.selectionPaths
+    val albumsTreeViewSelectedTreePaths: Array<TreePath>? get() = albumsTreeView.selectionPaths
 
     var listener: Listener? = null
 
@@ -97,15 +97,15 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
                 .build()
         )
 
-        hdTreeView = JTree()
-        hdTreeView.selectionModel =
-            HdTreeSelectionModel()
-        hdTreeView.autoscrolls = true
-        hdTreeView.model = null
+        albumsTreeView = JTree()
+        albumsTreeView.selectionModel =
+            AlbumsTreeSelectionModel()
+        albumsTreeView.autoscrolls = true
+        albumsTreeView.model = null
 
-        hdTreeViewScrollablePane = JScrollPane(hdTreeView)
+        albumsTreeViewScrollablePane = JScrollPane(albumsTreeView)
         middlePanel.add(
-            hdTreeViewScrollablePane,
+            albumsTreeViewScrollablePane,
             GridBagConstraintsBuilder()
                 .setFill(GridBagConstraints.BOTH)
                 .setGridX(0)
@@ -159,8 +159,8 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
             listener?.onBackButtonClicked()
         }
 
-        hdTreeView.addTreeSelectionListener {
-            listener?.onHdTreeViewSelectedTreePathsChanged(hdTreeViewSelectedTreePaths)
+        albumsTreeView.addTreeSelectionListener {
+            listener?.onAlbumsTreeViewSelectedTreePathsChanged(albumsTreeViewSelectedTreePaths)
         }
 
         uploadButton.addActionListener {
@@ -172,8 +172,8 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
         }
     }
 
-    fun setHdTreeViewScrollablePaneVisibility(isVisible: Boolean) {
-        hdTreeViewScrollablePane.isVisible = isVisible
+    fun setAlbumsTreeViewScrollablePaneVisibility(isVisible: Boolean) {
+        albumsTreeViewScrollablePane.isVisible = isVisible
     }
 
     fun setUploadLogTextAreaScrollablePaneVisibility(isVisible: Boolean) {
@@ -188,8 +188,8 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
         cancelUploadButton.isVisible = isVisible
     }
 
-    fun setHdTreeViewModel(model: TreeModel) {
-        hdTreeView.model = model
+    fun setAlbumsTreeViewModel(model: TreeModel) {
+        albumsTreeView.model = model
     }
 
     fun setUserEmail(email: String) {
@@ -207,7 +207,7 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
     }
 
     fun scrollLogsViewToTheBottom() {
-        val verticalScrollBar = hdTreeViewScrollablePane.verticalScrollBar
+        val verticalScrollBar = albumsTreeViewScrollablePane.verticalScrollBar
         verticalScrollBar.value = verticalScrollBar.maximum
     }
 }

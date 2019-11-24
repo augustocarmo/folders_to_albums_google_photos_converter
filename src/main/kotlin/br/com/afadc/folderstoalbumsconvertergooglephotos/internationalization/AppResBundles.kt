@@ -1,7 +1,7 @@
 package br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization
 
 import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.ConnectScreenResBundle
-import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.HdDirectoryScreenResBundle
+import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.AlbumsDirectoryScreenResBundle
 import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.UploadScreenResBundle
 import java.util.*
 
@@ -13,9 +13,9 @@ object AppResBundles {
         )
     )
 
-    fun getHdDirectoryScreenBundle() = HdDirectoryScreenResBundle.Bundle(
+    fun getAlbumsDirectoryScreenBundle() = AlbumsDirectoryScreenResBundle.Bundle(
         ResourceBundle.getBundle(
-            HdDirectoryScreenResBundle::class.java.name,
+            AlbumsDirectoryScreenResBundle::class.java.name,
             Locale.getDefault()
         )
     )

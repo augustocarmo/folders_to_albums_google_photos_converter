@@ -1,6 +1,6 @@
 package br.com.afadc.folderstoalbumsconvertergooglephotos.views
 
-import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.HdDirectoryScreenResBundle
+import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.def.AlbumsDirectoryScreenResBundle
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.GridBagConstraintsBuilder
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.MouseListenerAdapter
 import java.awt.Font
@@ -13,22 +13,22 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
 
-class HdDirectorySelectorScreen(resBundle: HdDirectoryScreenResBundle.Bundle) : JPanel(GridBagLayout()) {
+class AlbumsDirectorySelectorScreen(resBundle: AlbumsDirectoryScreenResBundle.Bundle) : JPanel(GridBagLayout()) {
 
     interface Listener {
         fun onSelectButtonClicked()
     }
 
     private val titleLabel: JLabel
-    private val selectHdDirectoryLabel: JLabel
-    private val selectHdDirectoryTextField: JTextField
-    private val selectButton: JButton
+    private val selectAlbumsDirectoryLabel: JLabel
+    private val selectAlbumsDirectoryTextField: JTextField
+    private val selectAlbumsDirectoryButton: JButton
 
     var listener: Listener? = null
 
     init {
-        titleLabel = JLabel(resBundle.selectTheHdDirectoryTitle)
-        titleLabel.font = Font(titleLabel.font.name, Font.PLAIN, 30)
+        titleLabel = JLabel(resBundle.selectTheAlbumsDirectoryTitle)
+        titleLabel.font = Font(titleLabel.font.name, Font.PLAIN, 26)
         this.add(
             titleLabel,
             GridBagConstraintsBuilder()
@@ -39,9 +39,9 @@ class HdDirectorySelectorScreen(resBundle: HdDirectoryScreenResBundle.Bundle) : 
                 .build()
         )
 
-        selectHdDirectoryLabel = JLabel(resBundle.selectTheHdDirectoryLabel)
+        selectAlbumsDirectoryLabel = JLabel(resBundle.selectTheAlbumsDirectoryLabel)
         this.add(
-            selectHdDirectoryLabel,
+            selectAlbumsDirectoryLabel,
             GridBagConstraintsBuilder()
                 .setFill(GridBagConstraints.BOTH)
                 .setGridX(0)
@@ -49,10 +49,10 @@ class HdDirectorySelectorScreen(resBundle: HdDirectoryScreenResBundle.Bundle) : 
                 .build()
         )
 
-        selectHdDirectoryTextField = JTextField(20)
-        selectHdDirectoryTextField.isFocusable = false
+        selectAlbumsDirectoryTextField = JTextField(28)
+        selectAlbumsDirectoryTextField.isFocusable = false
         this.add(
-            selectHdDirectoryTextField,
+            selectAlbumsDirectoryTextField,
             GridBagConstraintsBuilder()
                 .setFill(GridBagConstraints.BOTH)
                 .setGridX(1)
@@ -61,9 +61,9 @@ class HdDirectorySelectorScreen(resBundle: HdDirectoryScreenResBundle.Bundle) : 
                 .build()
         )
 
-        selectButton = JButton(resBundle.selectTheHdDirectoryButton)
+        selectAlbumsDirectoryButton = JButton(resBundle.selectTheAlbumsDirectoryButton)
         this.add(
-            selectButton,
+            selectAlbumsDirectoryButton,
             GridBagConstraintsBuilder()
                 .setFill(GridBagConstraints.BOTH)
                 .setGridX(2)
@@ -71,7 +71,7 @@ class HdDirectorySelectorScreen(resBundle: HdDirectoryScreenResBundle.Bundle) : 
                 .build()
         )
 
-        selectHdDirectoryTextField.addMouseListener(
+        selectAlbumsDirectoryTextField.addMouseListener(
             object : MouseListenerAdapter() {
                 override fun mouseClicked(event: MouseEvent?) {
                     listener?.onSelectButtonClicked()
@@ -79,7 +79,7 @@ class HdDirectorySelectorScreen(resBundle: HdDirectoryScreenResBundle.Bundle) : 
             }
         )
 
-        selectButton.addActionListener {
+        selectAlbumsDirectoryButton.addActionListener {
             listener?.onSelectButtonClicked()
         }
     }

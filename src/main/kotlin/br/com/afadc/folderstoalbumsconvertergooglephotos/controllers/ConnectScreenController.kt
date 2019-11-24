@@ -20,8 +20,7 @@ class ConnectScreenController(private val appFrame: AppFrame) :
 
     private val resBundle = AppResBundles.getConnectScreenBundle()
 
-    private val connectScreen =
-        ConnectScreen(resBundle)
+    private val connectScreen = ConnectScreen(resBundle)
 
     private val emailValidator by lazy { EmailValidator() }
 

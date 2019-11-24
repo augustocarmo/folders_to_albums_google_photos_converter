@@ -4,7 +4,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeSelectionModel
 import javax.swing.tree.TreePath
 
-class HdTreeSelectionModel : DefaultTreeSelectionModel() {
+class AlbumsTreeSelectionModel : DefaultTreeSelectionModel() {
 
     private fun filterSelectedPaths(paths: Array<out TreePath>?): Array<out TreePath>? {
         if (paths == null) {

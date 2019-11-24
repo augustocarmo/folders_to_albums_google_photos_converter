@@ -16,7 +16,7 @@ class AppFrameController {
     private var photosLibraryClient: PhotosLibraryClient? = null
     private var userEmail: String? = null
 
-    private var hdDirectoryFile: File? = null
+    private var albumsDirectoryFile: File? = null
     private var appDb: AppDatabase? = null
 
     init {
@@ -50,7 +50,7 @@ class AppFrameController {
     }
 
     fun removeScreenControllerFromStack(screenController: IScreenController) {
-        synchronized(screenControllersStack){
+        synchronized(screenControllersStack) {
             val isTheCurrentShowingScreenController = (screenController == screenControllersStack.lastOrNull())
 
             screenControllersStack.remove(screenController)
@@ -73,10 +73,7 @@ class AppFrameController {
     }
 
     private fun createConnectScreenController(): ConnectScreenController {
-        val connectScreenController =
-            ConnectScreenController(
-                appFrame
-            )
+        val connectScreenController = ConnectScreenController(appFrame)
         connectScreenController.listener = object :
             ConnectScreenController.Listener {
             override fun onUserConnected(photosLibraryClient: PhotosLibraryClient, email: String) {
@@ -84,37 +81,33 @@ class AppFrameController {
                 this@AppFrameController.photosLibraryClient = photosLibraryClient
                 this@AppFrameController.userEmail = email
 
-                addScreenControllerToStack(createHdDirectorySelectorScreenController())
+                addScreenControllerToStack(createAlbumsDirectorySelectorScreenController())
             }
         }
 
         return connectScreenController
     }
 
-    private fun createHdDirectorySelectorScreenController(): HdDirectorySelectorScreenController {
-        val hdDirectorySelectorScreenController =
-            HdDirectorySelectorScreenController(
-                appFrame
-            )
-        hdDirectorySelectorScreenController.listener = object :
-            HdDirectorySelectorScreenController.Listener {
-            override fun onHdDirectorySelected(hdDir: File) {
+    private fun createAlbumsDirectorySelectorScreenController(): AlbumsDirectorySelectorScreenController {
+        val albumsDirectorySelectorScreenController = AlbumsDirectorySelectorScreenController(appFrame)
+        albumsDirectorySelectorScreenController.listener = object :
+            AlbumsDirectorySelectorScreenController.Listener {
+            override fun onAlbumsDirectorySelected(albumsDir: File) {
                 this@AppFrameController.appDb?.close()
-                this@AppFrameController.hdDirectoryFile = hdDir
-                this@AppFrameController.appDb =
-                    AppDatabase(hdDir)
+                this@AppFrameController.albumsDirectoryFile = albumsDir
+                this@AppFrameController.appDb = AppDatabase(albumsDir)
 
                 addScreenControllerToStack(createUploadScreenController())
             }
         }
 
-        return hdDirectorySelectorScreenController
+        return albumsDirectorySelectorScreenController
     }
 
     private fun createUploadScreenController(): UploadScreenController {
         val photosLibraryClient = photosLibraryClient
         val appDb = appDb
-        val hdDirectoryFile = hdDirectoryFile
+        val albumsDirectoryFile = albumsDirectoryFile
         val userEmail = userEmail
 
         if (photosLibraryClient == null) {
@@ -125,21 +118,20 @@ class AppFrameController {
             throw IllegalStateException("appDb is null")
         }
 
-        if (hdDirectoryFile == null) {
-            throw IllegalStateException("hdDirectoryFile is null")
+        if (albumsDirectoryFile == null) {
+            throw IllegalStateException("albumsDirectoryFile is null")
         }
 
         if (userEmail?.isEmpty() != false) {
             throw IllegalStateException("user email is null or empty")
         }
 
-        val uploadScreenController =
-            UploadScreenController(
+        val uploadScreenController = UploadScreenController(
                 appFrame = appFrame,
                 photosLibraryClient = photosLibraryClient,
                 appDatabase = appDb,
                 userEmail = userEmail,
-                hdDirectoryFile = hdDirectoryFile
+                albumsDirectoryFile = albumsDirectoryFile
             )
 
         uploadScreenController.listener = object :

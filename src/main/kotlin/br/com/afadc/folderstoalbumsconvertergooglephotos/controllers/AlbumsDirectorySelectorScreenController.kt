@@ -3,45 +3,43 @@ package br.com.afadc.folderstoalbumsconvertergooglephotos.controllers
 import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.AppResBundles
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.Log
 import br.com.afadc.folderstoalbumsconvertergooglephotos.views.AppFrame
-import br.com.afadc.folderstoalbumsconvertergooglephotos.views.HdDirectorySelectorScreen
+import br.com.afadc.folderstoalbumsconvertergooglephotos.views.AlbumsDirectorySelectorScreen
 import java.io.File
 import java.lang.RuntimeException
 import javax.swing.JFileChooser
 
-class HdDirectorySelectorScreenController(private val appFrame: AppFrame):
-    IScreenController {
+class AlbumsDirectorySelectorScreenController(private val appFrame: AppFrame) : IScreenController {
 
     interface Listener {
-        fun onHdDirectorySelected(hdDir: File)
+        fun onAlbumsDirectorySelected(albumsDir: File)
     }
 
-    private val resBundle = AppResBundles.getHdDirectoryScreenBundle()
+    private val resBundle = AppResBundles.getAlbumsDirectoryScreenBundle()
 
-    private val hdDirectorySelectorScreen =
-        HdDirectorySelectorScreen(resBundle)
+    private val albumsDirectorySelectorScreen = AlbumsDirectorySelectorScreen(resBundle)
 
     var listener: Listener? = null
 
     init {
-        hdDirectorySelectorScreen.listener = object : HdDirectorySelectorScreen.Listener {
+        albumsDirectorySelectorScreen.listener = object : AlbumsDirectorySelectorScreen.Listener {
             override fun onSelectButtonClicked() {
-                selectHdDirectory()
+                selectAlbumsDirectory()
             }
         }
     }
 
     override fun show() {
         appFrame.contentPane.removeAll()
-        appFrame.contentPane.add(hdDirectorySelectorScreen)
+        appFrame.contentPane.add(albumsDirectorySelectorScreen)
 
         appFrame.validate()
         appFrame.repaint()
     }
 
-    fun selectHdDirectory() {
-        val chosenFile = chooseHdDirectoryFile()
+    fun selectAlbumsDirectory() {
+        val chosenFile = chooseAlbumsDirectoryFile()
         if (chosenFile == null) {
-            Log.i(TAG, "no hd directory file was chosen")
+            Log.i(TAG, "no albums directory file was chosen")
 
             return
         }
@@ -50,15 +48,15 @@ class HdDirectorySelectorScreenController(private val appFrame: AppFrame):
             throw RuntimeException("The chosen file [$chosenFile] is not a directory")
         }
 
-        Log.i(TAG, "The Hd directory was chosen: [$chosenFile]")
+        Log.i(TAG, "The albums directory was chosen: [$chosenFile]")
 
-        listener?.onHdDirectorySelected(chosenFile)
+        listener?.onAlbumsDirectorySelected(chosenFile)
     }
 
-    private fun chooseHdDirectoryFile(): File? {
+    private fun chooseAlbumsDirectoryFile(): File? {
         val jfc = JFileChooser()
         jfc.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-        jfc.dialogTitle = resBundle.selectTheHdDirectoryFileChooserTitle
+        jfc.dialogTitle = resBundle.selectTheAlbumsDirectoryFileChooserTitle
         val returnValue = jfc.showOpenDialog(null)
         // int returnValue = jfc.showSaveDialog(null);
 
@@ -70,6 +68,6 @@ class HdDirectorySelectorScreenController(private val appFrame: AppFrame):
     }
 
     companion object {
-        private val TAG = HdDirectorySelectorScreenController::class.java.simpleName
+        private val TAG = AlbumsDirectorySelectorScreenController::class.java.simpleName
     }
 }
