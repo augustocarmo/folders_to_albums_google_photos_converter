@@ -1,5 +1,7 @@
 package br.com.afadc.folderstoalbumsconvertergooglephotos.utils
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 import java.io.File
 import javax.swing.tree.DefaultMutableTreeNode
 
@@ -30,6 +32,8 @@ class FileNodesCreator {
             if (isCanceled) {
                 return
             }
+
+            isCanceled = true
 
             synchronized(cancelListeners) {
                 for (listener in cancelListeners.toList()) {
@@ -77,50 +81,54 @@ class FileNodesCreator {
     }
 
     fun executeFileNodesCreatorTask(task: FileNodesCreatorTask, listener: FileNodesCreatorTaskListener) {
-        val taskCancelListener = object : FileNodesCreatorTask.CancelListener {
-            override fun onCanceled() {
-                listener.onCanceled()
+        GlobalScope.launch {
+            val taskCancelListener = object : FileNodesCreatorTask.CancelListener {
+                override fun onCanceled() {
+                    listener.onCanceled()
+                }
             }
-        }
-        task.addCancelListener(taskCancelListener)
+            task.addCancelListener(taskCancelListener)
 
-        try {
-            if (task.isCanceled) {
-                return
-            }
+            try {
+                if (task.isCanceled) {
+                    return@launch
+                }
 
-            val rootFile = task.rootFile
-            val validExtensions = task.validExtensions.copyOf()
+                val rootFile = task.rootFile
+                val validExtensions = task.validExtensions.copyOf()
 
-            val rootNode = DefaultMutableTreeNode(
-                FileNode(
-                    rootFile,
-                    true
+                val rootNode = DefaultMutableTreeNode(
+                    FileNode(
+                        rootFile,
+                        true
+                    )
                 )
-            )
 
-            if (task.isCanceled) {
-                return
+                if (task.isCanceled) {
+                    return@launch
+                }
+
+                withContext(IO) {
+                    createChildrenNodesFrom(
+                        task,
+                        rootFile,
+                        rootNode,
+                        validExtensions.map { it.toLowerCase() }.toTypedArray()
+                    )
+                }
+
+                if (task.isCanceled) {
+                    return@launch
+                }
+
+                listener.onCompleted(rootNode)
+            } finally {
+                task.removeCancelListener(taskCancelListener)
             }
-
-            createChildrenNodesFrom(
-                task,
-                rootFile,
-                rootNode,
-                validExtensions.map { it.toLowerCase() }.toTypedArray()
-            )
-
-            if (task.isCanceled) {
-                return
-            }
-
-            listener.onCompleted(rootNode)
-        } finally {
-            task.removeCancelListener(taskCancelListener)
         }
     }
 
-    private fun createChildrenNodesFrom(
+    private suspend fun createChildrenNodesFrom(
         task: FileNodesCreatorTask,
         file: File,
         node: DefaultMutableTreeNode,
@@ -148,35 +156,56 @@ class FileNodesCreator {
             return photoCount
         }
 
-        for (childFile in childrenFiles) {
+        photoCount += childrenFiles.mapNotNull { childFile ->
             if (task.isCanceled) {
-                return photoCount
+                return@mapNotNull null
             }
 
-            if (childFile.isFile) {
-                val childFileExtension = childFile.extension
-                if (childFileExtension.isEmpty() || !validExtensions.contains(childFile.extension.toLowerCase())) {
-                    continue
+            GlobalScope.async {
+                var childFilePhotoCount = 0
+
+                if (task.isCanceled) {
+                    return@async childFilePhotoCount
                 }
 
-                photoCount++
-            }
+                if (childFile.isFile) {
+                    val childFileExtension = childFile.extension
+                    if (childFileExtension.isEmpty() || !validExtensions.contains(childFile.extension.toLowerCase())) {
+                        return@async childFilePhotoCount
+                    }
 
-            val childNode = DefaultMutableTreeNode(
-                FileNode(
-                    childFile,
-                    false
+                    childFilePhotoCount += 1
+                }
+
+                val childNode = DefaultMutableTreeNode(
+                    FileNode(
+                        childFile,
+                        false
+                    )
                 )
-            )
-            node.add(childNode)
 
-            if (file.isDirectory) {
-                photoCount += createChildrenNodesFrom(task, childFile, childNode, validExtensions)
+                synchronized(task) {
+                    node.add(childNode)
+                }
+
+                if (childFile.isDirectory) {
+                    childFilePhotoCount += createChildrenNodesFrom(task, childFile, childNode, validExtensions)
+                }
+
+                return@async childFilePhotoCount
             }
+        }.sumBy {
+            it.await()
+        }
+
+        if (task.isCanceled) {
+            return photoCount
         }
 
         if (photoCount == 0) {
-            node.removeFromParent()
+            synchronized(task) {
+                node.removeFromParent()
+            }
         }
 
         (node.userObject as FileNode).photoCount = photoCount

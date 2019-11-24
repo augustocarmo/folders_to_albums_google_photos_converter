@@ -221,8 +221,8 @@ class UploadScreenController(
     }
 
     private fun cancelCurrentFileNodesCreatorTask() {
-        currentAlbumsUploadTask?.cancel()
-        currentAlbumsUploadTask = null
+        currentFileNodesCreatorTask?.cancel()
+        currentFileNodesCreatorTask = null
     }
 
     private fun onBeforeSettingRenderingState() {
