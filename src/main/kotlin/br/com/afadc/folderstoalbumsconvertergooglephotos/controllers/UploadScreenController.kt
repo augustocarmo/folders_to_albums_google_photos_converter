@@ -79,6 +79,19 @@ class UploadScreenController(
         currentFileNodesCreatorTaskListener = object : FileNodesCreator.FileNodesCreatorTaskListener {
             override fun onCompleted(rootNode: DefaultMutableTreeNode) {
                 SwingUtilities.invokeLater {
+                    if (rootNode.childCount == 0) {
+                        JOptionPane.showMessageDialog(
+                            appFrame,
+                            resBundle.noAlbumsDirectoriesPopUpMessage,
+                            resBundle.noAlbumsDirectoriesPopUpTitle,
+                            JOptionPane.WARNING_MESSAGE
+                        )
+
+                        dismiss()
+
+                        return@invokeLater
+                    }
+
                     val albumsTreeViewModel = DefaultTreeModel(rootNode)
                     uploadScreen.setAlbumsTreeViewModel(albumsTreeViewModel)
 

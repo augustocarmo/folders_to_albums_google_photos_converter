@@ -19,10 +19,12 @@ abstract class UploadScreenResBundleTemplate: ListResourceBundle(),
         kv(LOG_ON_WILL_CREATE_MEDIA_ITEMS_FORMAT_KEY, logOnWillCreateMediaItemsFormat),
         kv(LOG_ON_WILL_UPLOAD_MEDIA_FORMAT_KEY, logOnWillUploadMediaFormat),
         kv(LOG_STARTING_TO_UPLOAD_MEDIAS_KEY, logStartingToUploadMedias),
+        kv(NO_ALBUMS_DIRECTORIES_POP_UP_MESSAGE_KEY, noAlbumsDirectoriesPopUpMessage),
+        kv(NO_ALBUMS_DIRECTORIES_POP_UP_TITLE_KEY, noAlbumsDirectoriesPopUpTitle),
         kv(NO_MEDIA_SELECTED_POP_UP_MESSAGE_KEY, noMediaSelectedPopUpMessage),
+        kv(NO_MEDIA_SELECTED_POP_UP_TITLE_KEY, noMediaSelectedPopUpTitle),
         kv(UPLOAD_MEDIA_BUTTON_ZERO_MEDIA_COUNT_KEY, uploadMediaButtonZeroMediaCount),
         kv(UPLOAD_MEDIA_BUTTON_NON_ZERO_MEDIA_COUNT_FORMAT_KEY, uploadMediaButtonNonZeroMediaCountFormat),
-        kv(NO_MEDIA_SELECTED_POP_UP_TITLE_KEY, noMediaSelectedPopUpTitle),
         kv(UPLOAD_MEDIA_ERROR_POP_UP_ALBUM_CREATION_FAILED_MESSAGE_KEY, uploadMediaErrorPopUpAlbumCreationFailedMessage),
         kv(UPLOAD_MEDIA_ERROR_POP_UP_GENERAL_ERROR_MESSAGE_KEY, uploadMediaErrorPopUpGeneralErrorMessage),
         kv(UPLOAD_MEDIA_ERROR_POP_UP_NO_GOOGLE_PHOTOS_ACCESS_MESSAGE_KEY, uploadMediaErrorPopUpNoGooglePhotosAccessMessage),
@@ -40,6 +42,8 @@ abstract class UploadScreenResBundleTemplate: ListResourceBundle(),
         const val LOG_ON_MEDIA_ITEM_CREATION_SUCCEEDED_FORMAT_KEY = "log_on_media_item_creation_succeeded_format"
         const val LOG_ON_WILL_CREATE_MEDIA_ITEMS_FORMAT_KEY = "log_on_will_create_media_items_format"
         const val LOG_ON_WILL_UPLOAD_MEDIA_FORMAT_KEY = "log_on_will_upload_media_format"
+        const val NO_ALBUMS_DIRECTORIES_POP_UP_MESSAGE_KEY = "no_albums_directories_pop_up_message"
+        const val NO_ALBUMS_DIRECTORIES_POP_UP_TITLE_KEY = "no_albums_directories_pop_up_title"
         const val NO_MEDIA_SELECTED_POP_UP_MESSAGE_KEY = "no_media_selected_pop_up_message"
         const val NO_MEDIA_SELECTED_POP_UP_TITLE_KEY = "no_media_selected_pop_up_title"
         const val LOG_STARTING_TO_UPLOAD_MEDIAS_KEY = "log_starting_to_upload_medias"
