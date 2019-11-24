@@ -149,6 +149,8 @@ class FileNodesCreator {
             return 0
         }
 
+        val isNodeRootNode = (node.userObject as FileNode).isRoot
+
         val childrenNodesToAdd = ArrayList<DefaultMutableTreeNode>()
 
         mediaCount += childrenFiles.mapNotNull { childFile ->
@@ -164,6 +166,10 @@ class FileNodesCreator {
                 }
 
                 if (childFile.isFile) {
+                    if ((isNodeRootNode)) {
+                        return@async 0
+                    }
+
                     val childFileExtension = childFile.extension
                     if (childFileExtension.isEmpty() || !validExtensions.contains(childFile.extension.toLowerCase())) {
                         return@async 0
