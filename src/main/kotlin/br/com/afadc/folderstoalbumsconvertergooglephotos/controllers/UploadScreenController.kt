@@ -3,6 +3,8 @@ package br.com.afadc.folderstoalbumsconvertergooglephotos.controllers
 import br.com.afadc.folderstoalbumsconvertergooglephotos.PhotosUtils.MediaUploader
 import com.google.photos.library.v1.PhotosLibraryClient
 import br.com.afadc.folderstoalbumsconvertergooglephotos.db.AppDatabase
+import br.com.afadc.folderstoalbumsconvertergooglephotos.entities.Album
+import br.com.afadc.folderstoalbumsconvertergooglephotos.entities.Media
 import br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.AppResBundles
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.FileNodesCreator
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.Log
@@ -68,7 +70,7 @@ class UploadScreenController(
             }
 
             override fun onUploadButtonClicked() {
-                uploadSelectedMedia()
+                uploadSelectedAlbums()
             }
 
             override fun onCancelUploadButtonClicked() {
@@ -105,24 +107,24 @@ class UploadScreenController(
         }
 
         albumsUploadTaskListener = object : MediaUploader.AlbumsUploadTaskListener {
-            override fun onWillUploadAlbum(albumDir: File) {
+            override fun onWillUploadAlbum(album: Album) {
                 SwingUtilities.invokeLater {
                     // TODO:
                 }
             }
 
-            override fun onWWillUploadAlbumMedia(albumDir: File, mediaFile: File) {
+            override fun onWWillUploadAlbumMedia(album: Album, media: Media) {
                 SwingUtilities.invokeLater {
                     appendNewMediaUploadLogEntry(
                         resBundle.logOnWillUploadMediaFormat.format(
-                            "file:${mediaFile.absolutePath}",
-                            mediaFile.absolutePath
+                            "file:${media.file.absolutePath}",
+                            media.file.absolutePath
                         )
                     )
                 }
             }
 
-            override fun onAlbumMediaUploadResult(success: Boolean, albumDir: File, mediaFile: File) {
+            override fun onAlbumMediaUploadResult(success: Boolean, album: Album, media: Media) {
                 SwingUtilities.invokeLater {
                     if (success) {
                         appendNewMediaUploadLogEntry(resBundle.logOnMediaUploadedSucceeded)
@@ -132,35 +134,35 @@ class UploadScreenController(
                 }
             }
 
-            override fun onWillCreateAlbumMediaItems(albumDir: File, mediasFiles: List<File>) {
+            override fun onWillCreateAlbumMediaItems(album: Album, medias: List<Media>) {
                 SwingUtilities.invokeLater {
                     appendNewMediaUploadLogEntry(
                         resBundle.logOnWillCreateMediaItemsFormat.format(
-                            mediasFiles.count()
+                            medias.count()
                         )
                     )
                 }
             }
 
-            override fun onAlbumMediaItemCreationResult(success: Boolean, albumDir: File, mediaFile: File) {
+            override fun onAlbumMediaItemCreationResult(success: Boolean, album: Album, media: Media) {
                 SwingUtilities.invokeLater {
                     if (success) {
                         appendNewMediaUploadLogEntry(
                             resBundle.logOnMediaItemCreationSucceededFormat.format(
-                                mediaFile.absolutePath
+                                media.file.absolutePath
                             )
                         )
                     } else {
                         appendNewMediaUploadLogEntry(
                             resBundle.logOnMediaItemCreationFailedFormat.format(
-                                mediaFile.absolutePath
+                                media.file.absolutePath
                             )
                         )
                     }
                 }
             }
 
-            override fun onAlbumUploadCompleted(albumDir: File) {
+            override fun onAlbumUploadCompleted(album: Album) {
                 SwingUtilities.invokeLater {
                     // TODO:
                 }
@@ -305,7 +307,7 @@ class UploadScreenController(
         )
     }
 
-    private fun uploadSelectedMedia() {
+    private fun uploadSelectedAlbums() {
         val selectedTreePaths = uploadScreen.albumsTreeViewSelectedTreePaths
         if (selectedTreePaths == null || selectedTreePaths.isEmpty()) {
             Log.i(TAG, "No media to upload")
@@ -320,8 +322,26 @@ class UploadScreenController(
             return
         }
 
-        val selectedDirectories = selectedTreePaths.map {
-            ((it.lastPathComponent as DefaultMutableTreeNode).userObject as FileNodesCreator.FileNode).file
+        val albums = ArrayList<Album>()
+
+        for (selectedTreePath in selectedTreePaths) {
+            val mediaFiles = ArrayList<Media>()
+
+            val albumNode = (selectedTreePath.lastPathComponent as DefaultMutableTreeNode)
+            val albumFile = (albumNode.userObject as FileNodesCreator.FileNode).file
+            val albumEnumeration = albumNode.preorderEnumeration()
+            while (albumEnumeration.hasMoreElements()) {
+                val nextNode = (albumEnumeration.nextElement() as DefaultMutableTreeNode)
+                val file = (nextNode.userObject as FileNodesCreator.FileNode).file
+
+                if (file.isFile) {
+                    mediaFiles.add(Media(file))
+                }
+            }
+
+            if (mediaFiles.isNotEmpty()) {
+                albums.add(Album(albumFile, mediaFiles))
+            }
         }
 
         clearMediaUploadLogList()
@@ -331,9 +351,7 @@ class UploadScreenController(
 
         setRenderingState(RenderingState.UPLOADING_MEDIA)
 
-        val newAlbumsUploadTask = mediaUploader.createAlbumsUploadTask(
-            selectedDirectories
-        )
+        val newAlbumsUploadTask = mediaUploader.createAlbumsUploadTask(albums)
 
         currentAlbumsUploadTask = newAlbumsUploadTask
 

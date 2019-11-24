@@ -7,8 +7,9 @@ import com.google.rpc.Code
 import br.com.afadc.folderstoalbumsconvertergooglephotos.db.AppDatabase
 import br.com.afadc.folderstoalbumsconvertergooglephotos.db.entities.DbAlbum
 import br.com.afadc.folderstoalbumsconvertergooglephotos.db.entities.DbMedia
+import br.com.afadc.folderstoalbumsconvertergooglephotos.entities.Album
+import br.com.afadc.folderstoalbumsconvertergooglephotos.entities.Media
 import br.com.afadc.folderstoalbumsconvertergooglephotos.utils.Log
-import java.io.File
 import java.io.RandomAccessFile
 import java.lang.Exception
 import java.util.concurrent.locks.ReentrantLock
@@ -23,22 +24,22 @@ class MediaUploader {
     }
 
     private interface AlbumUploadListener {
-        fun onWillUploadMedia(mediaFile: File)
-        fun onMediaUploadResult(success: Boolean, mediaFile: File)
-        fun onWillCreateMediaItems(mediasFiles: List<File>)
-        fun onMediaItemCreationResult(success: Boolean, mediaFile: File)
+        fun onWillUploadMedia(media: Media)
+        fun onMediaUploadResult(success: Boolean, media: Media)
+        fun onWillCreateMediaItems(medias: List<Media>)
+        fun onMediaItemCreationResult(success: Boolean, media: Media)
         fun onError(error: Error)
         fun onCompleted()
         fun onCanceled()
     }
 
     interface AlbumsUploadTaskListener {
-        fun onWillUploadAlbum(albumDir: File)
-        fun onWWillUploadAlbumMedia(albumDir: File, mediaFile: File)
-        fun onAlbumMediaUploadResult(success: Boolean, albumDir: File, mediaFile: File)
-        fun onWillCreateAlbumMediaItems(albumDir: File, mediasFiles: List<File>)
-        fun onAlbumMediaItemCreationResult(success: Boolean, albumDir: File, mediaFile: File)
-        fun onAlbumUploadCompleted(albumDir: File)
+        fun onWillUploadAlbum(album: Album)
+        fun onWWillUploadAlbumMedia(album: Album, media: Media)
+        fun onAlbumMediaUploadResult(success: Boolean, album: Album, media: Media)
+        fun onWillCreateAlbumMediaItems(album: Album, medias: List<Media>)
+        fun onAlbumMediaItemCreationResult(success: Boolean, album: Album, media: Media)
+        fun onAlbumUploadCompleted(album: Album)
         fun onError(error: Error)
         fun onCompleted()
         fun onCanceled()
@@ -87,53 +88,22 @@ class MediaUploader {
         }
     }
 
-    private class AlbumUploadTask(val albumDir: File) : MediaUploadTask()
+    private class AlbumUploadTask(val album: Album) : MediaUploadTask()
 
-    class AlbumsUploadTask(val albumsDirs: List<File>) : MediaUploadTask()
+    class AlbumsUploadTask(val albums: List<Album>) : MediaUploadTask()
 
-    private fun createAlbumUploadTask(albumDir: File) =
-        AlbumUploadTask(
-            albumDir
-        )
+    private fun createAlbumUploadTask(album: Album) = AlbumUploadTask(album)
 
-    fun createAlbumsUploadTask(albumsDirs: List<File>) =
-        AlbumsUploadTask(
-            albumsDirs
-        )
+    fun createAlbumsUploadTask(albums: List<Album>) = AlbumsUploadTask(albums)
 
-    private fun getTotalFilesLengthInBytes(files: List<File>): Long {
-        if (files.isEmpty()) {
+    private fun getTotalFilesLengthInBytes(medias: List<Media>): Long {
+        if (medias.isEmpty()) {
             return 0L
         }
 
-        return files.fold(0L) { acc, file ->
-            acc + file.length()
+        return medias.fold(0L) { acc, media ->
+            acc + media.file.length()
         }
-    }
-
-    private fun extractMediasFromAlbumDir(albumDir: File): List<File> {
-        if (!albumDir.isDirectory) {
-            throw IllegalArgumentException("album dir [$albumDir] is not a directory")
-        }
-
-        val validExtensions = ALL_VALID_EXTENSIONS.map { it.toLowerCase() }
-        val mediasFiles = ArrayList<File>()
-
-        val filesToCheck = arrayListOf(albumDir)
-
-        while (filesToCheck.isNotEmpty()) {
-            val currentFile = filesToCheck.removeAt(0)
-            if (currentFile.isDirectory) {
-                val childrenFiles = currentFile.listFiles()
-                if (childrenFiles != null) {
-                    filesToCheck.addAll(childrenFiles)
-                }
-            } else if (validExtensions.contains(currentFile.extension.toLowerCase())) {
-                mediasFiles.add(currentFile)
-            }
-        }
-
-        return mediasFiles
     }
 
     private fun canPhotosLibraryClientBeUsed(photosLibraryClient: PhotosLibraryClient): Boolean {
@@ -145,24 +115,24 @@ class MediaUploader {
         db: AppDatabase,
         photosAlbumId: String,
         albumUploadTask: AlbumUploadTask,
-        albumName: String,
-        uploadFilesAndTokens: List<Pair<File, String>>,
+        album: Album,
+        uploadMediasAndTokens: List<Pair<Media, String>>,
         albumUploadListener: AlbumUploadListener
     ) {
         if (albumUploadTask.isCanceled) {
             return
         }
 
-        if (uploadFilesAndTokens.count() > MAX_ITEMS_UPLOADS_PER_BATCH) {
-            throw IllegalArgumentException("mediaUploadTokensList has a size [${uploadFilesAndTokens.count()}] greater than the limit [$MAX_ITEMS_UPLOADS_PER_BATCH]")
+        if (uploadMediasAndTokens.count() > MAX_ITEMS_UPLOADS_PER_BATCH) {
+            throw IllegalArgumentException("mediaUploadTokensList has a size [${uploadMediasAndTokens.count()}] greater than the limit [$MAX_ITEMS_UPLOADS_PER_BATCH]")
         }
 
 
         albumUploadListener.onWillCreateMediaItems(
-            uploadFilesAndTokens.map { it.first }
+            uploadMediasAndTokens.map { it.first }
         )
 
-        val mediaItemsUploadTokens = uploadFilesAndTokens.map {
+        val mediaItemsUploadTokens = uploadMediasAndTokens.map {
             NewMediaItemFactory.createNewMediaItem(it.second)
         }
 
@@ -182,12 +152,12 @@ class MediaUploader {
         // this operation should not be canceled, once the items creations has already occurred.
         // that is why the task isCanceled flag is not checked and the loop is duplicated afterwards
         for (itemResponse in mediaItemsCreationResponse.newMediaItemResultsList) {
-            val mediaFile = uploadFilesAndTokens.first { it.second == itemResponse.uploadToken }.first
+            val media = uploadMediasAndTokens.first { it.second == itemResponse.uploadToken }.first
             if (itemResponse.status.code == Code.OK_VALUE) {
                 db.insertOrUpdateMedia(
                     DbMedia(
-                        path = db.getRelativeFilePathToDbDir(mediaFile),
-                        albumName = albumName,
+                        path = db.getRelativeFilePathToDbDir(media.file),
+                        albumName = album.name,
                         isUploadedAndCreated = true,
                         uploadToken = null,
                         uploadTokenGenerationTime = null
@@ -206,7 +176,7 @@ class MediaUploader {
             }
 
             val success = itemResponse.status.code == Code.OK_VALUE
-            val mediaFile = uploadFilesAndTokens.first { it.second == itemResponse.uploadToken }.first
+            val mediaFile = uploadMediasAndTokens.first { it.second == itemResponse.uploadToken }.first
 
             albumUploadListener.onMediaItemCreationResult(success, mediaFile)
         }
@@ -250,21 +220,21 @@ class MediaUploader {
                     return
                 }
 
-                val albumDir = task.albumDir
-                val albumMediasFiles = extractMediasFromAlbumDir(albumDir)
-                if (albumMediasFiles.isEmpty()) {
+                val album = task.album
+                val albumMedias = album.medias
+                if (albumMedias.isEmpty()) {
                     listener.onCompleted()
                 }
 
                 val photosAlbumId: String
 
-                val dbAlbum = db.getDbAlbumByDir(albumDir)
+                val dbAlbum = db.getDbAlbumByDir(album.directory)
 
                 if (task.isCanceled) {
                     return
                 }
 
-                val albumName = albumDir.name
+                val albumName = album.name
 
                 if (dbAlbum != null) {
                     photosAlbumId = dbAlbum.photos_album_id
@@ -296,16 +266,16 @@ class MediaUploader {
                     return
                 }
 
-                val uploadedMediasFiles = ArrayList<Pair<File, String>>()
-                for (albumMediaFile in albumMediasFiles) {
+                val uploadedMedias = ArrayList<Pair<Media, String>>()
+                for (albumMedia in albumMedias) {
                     if (task.isCanceled) {
                         return
                     }
 
                     val currentUploadedMediasFilesLength = getTotalFilesLengthInBytes(
-                        uploadedMediasFiles.map { it.first }
+                        uploadedMedias.map { it.first }
                     )
-                    if (uploadedMediasFiles.count() == MAX_ITEMS_UPLOADS_PER_BATCH
+                    if (uploadedMedias.count() == MAX_ITEMS_UPLOADS_PER_BATCH
                         || currentUploadedMediasFilesLength > MAX_SIZE_BYTES_TO_TRIGGER_MEDIA_CREATION_BATCH
                     ) {
                         batchCreateAlbumMediaItems(
@@ -313,23 +283,23 @@ class MediaUploader {
                             db,
                             photosAlbumId,
                             task,
-                            albumName,
-                            uploadedMediasFiles,
+                            album,
+                            uploadedMedias,
                             listener
                         )
 
-                        uploadedMediasFiles.clear()
+                        uploadedMedias.clear()
                     }
 
                     if (task.isCanceled) {
                         return
                     }
 
-                    println("Uploading photo: ${albumMediaFile.absolutePath}")
+                    println("Uploading photo: ${albumMedia.file.absolutePath}")
 
-                    listener.onWillUploadMedia(albumMediaFile)
+                    listener.onWillUploadMedia(albumMedia)
 
-                    val dbMedia = db.getDbMediaByFile(albumMediaFile)
+                    val dbMedia = db.getDbMediaByFile(albumMedia.file)
 
                     if (task.isCanceled) {
                         return
@@ -337,15 +307,15 @@ class MediaUploader {
 
                     if (dbMedia != null) {
                         if (dbMedia.isUploadedAndCreated) {
-                            println("${albumMediaFile.absolutePath} is already uploaded and created")
+                            println("${albumMedia.file.absolutePath} is already uploaded and created")
 
-                            listener.onMediaUploadResult(true, albumMediaFile)
+                            listener.onMediaUploadResult(true, albumMedia)
 
                             if (task.isCanceled) {
                                 return
                             }
 
-                            listener.onMediaItemCreationResult(true, albumMediaFile)
+                            listener.onMediaItemCreationResult(true, albumMedia)
 
                             continue
                         }
@@ -356,9 +326,9 @@ class MediaUploader {
                             && dbMedia.uploadTokenGenerationTime != null
                             && mediaFileUploadElapsedTimeMs < MAX_TIME_MS_TO_CONSIDER_UPLOAD_TOKE_FROM_DB
                         ) {
-                            uploadedMediasFiles.add(albumMediaFile to dbMedia.uploadToken!!)
+                            uploadedMedias.add(albumMedia to dbMedia.uploadToken!!)
 
-                            listener.onMediaUploadResult(true, albumMediaFile)
+                            listener.onMediaUploadResult(true, albumMedia)
 
                             continue
                         }
@@ -368,19 +338,19 @@ class MediaUploader {
                         return
                     }
 
-                    if (!albumMediaFile.exists()) {
+                    if (!albumMedia.file.exists()) {
                         Log.w(
-                            TAG, "The file [${albumMediaFile.absolutePath}] no longer exists")
+                            TAG, "The file [${albumMedia.file.absolutePath}] no longer exists")
 
-                        listener.onMediaUploadResult(false, albumMediaFile)
+                        listener.onMediaUploadResult(false, albumMedia)
 
                         continue
                     }
 
                     val uploadRequest = UploadMediaItemRequest
                         .newBuilder()
-                        .setFileName(albumMediaFile.name)
-                        .setDataFile(RandomAccessFile(albumMediaFile, "r"))
+                        .setFileName(albumMedia.name)
+                        .setDataFile(RandomAccessFile(albumMedia.file, "r"))
                         .build()
 
                     if (task.isCanceled) {
@@ -389,16 +359,16 @@ class MediaUploader {
 
                     val uploadResponse = photosLibraryClient.uploadMediaItem(uploadRequest)
                     if (!uploadResponse.error.isPresent) {
-                        println("Photo uploaded: ${albumMediaFile.absolutePath}")
+                        println("Photo uploaded: ${albumMedia.file.absolutePath}")
 
                         val uploadToken = uploadResponse.uploadToken.get()
                         val uploadTokenGenerationTimeMs = System.currentTimeMillis()
 
-                        uploadedMediasFiles.add(albumMediaFile to uploadToken)
+                        uploadedMedias.add(albumMedia to uploadToken)
 
                         db.insertOrUpdateMedia(
                             DbMedia(
-                                path = db.getRelativeFilePathToDbDir(albumMediaFile),
+                                path = db.getRelativeFilePathToDbDir(albumMedia.file),
                                 albumName = albumName,
                                 isUploadedAndCreated = false,
                                 uploadToken = uploadToken,
@@ -410,15 +380,15 @@ class MediaUploader {
                             return
                         }
 
-                        listener.onMediaUploadResult(true, albumMediaFile)
+                        listener.onMediaUploadResult(true, albumMedia)
                     } else {
-                        println("Failed to upload the photo: ${albumMediaFile.absolutePath}")
+                        println("Failed to upload the photo: ${albumMedia.file.absolutePath}")
 
                         if (task.isCanceled) {
                             return
                         }
 
-                        listener.onMediaUploadResult(false, albumMediaFile)
+                        listener.onMediaUploadResult(false, albumMedia)
                     }
                 }
 
@@ -426,18 +396,18 @@ class MediaUploader {
                     return
                 }
 
-                if (uploadedMediasFiles.isNotEmpty()) {
+                if (uploadedMedias.isNotEmpty()) {
                     batchCreateAlbumMediaItems(
                         photosLibraryClient,
                         db,
                         photosAlbumId,
                         task,
-                        albumName,
-                        uploadedMediasFiles,
+                        album,
+                        uploadedMedias,
                         listener
                     )
 
-                    uploadedMediasFiles.clear()
+                    uploadedMedias.clear()
                 }
 
                 if (task.isCanceled) {
@@ -477,19 +447,19 @@ class MediaUploader {
                 return
             }
 
-            val albumsDirs = task.albumsDirs.toList()
-            for (albumDir in albumsDirs) {
+            val albums = task.albums.toList()
+            for (album in albums) {
                 if (task.isCanceled) {
                     return
                 }
 
-                listener.onWillUploadAlbum(albumDir)
+                listener.onWillUploadAlbum(album)
 
                 if (task.isCanceled) {
                     return
                 }
 
-                val albumUploadTask = createAlbumUploadTask(albumDir)
+                val albumUploadTask = createAlbumUploadTask(album)
 
                 currentAlbumUploadTask = albumUploadTask
 
@@ -499,36 +469,36 @@ class MediaUploader {
                     albumUploadTask,
                     object :
                         AlbumUploadListener {
-                        override fun onWillUploadMedia(mediaFile: File) {
+                        override fun onWillUploadMedia(media: Media) {
                             if (task.isCanceled) {
                                 return
                             }
 
-                            listener.onWWillUploadAlbumMedia(albumDir, mediaFile)
+                            listener.onWWillUploadAlbumMedia(album, media)
                         }
 
-                        override fun onMediaUploadResult(success: Boolean, mediaFile: File) {
+                        override fun onMediaUploadResult(success: Boolean, media: Media) {
                             if (task.isCanceled) {
                                 return
                             }
 
-                            listener.onAlbumMediaUploadResult(success, albumDir, mediaFile)
+                            listener.onAlbumMediaUploadResult(success, album, media)
                         }
 
-                        override fun onWillCreateMediaItems(mediasFiles: List<File>) {
+                        override fun onWillCreateMediaItems(medias: List<Media>) {
                             if (task.isCanceled) {
                                 return
                             }
 
-                            listener.onWillCreateAlbumMediaItems(albumDir, mediasFiles)
+                            listener.onWillCreateAlbumMediaItems(album, medias)
                         }
 
-                        override fun onMediaItemCreationResult(success: Boolean, mediaFile: File) {
+                        override fun onMediaItemCreationResult(success: Boolean, media: Media) {
                             if (task.isCanceled) {
                                 return
                             }
 
-                            listener.onAlbumMediaItemCreationResult(success, albumDir, mediaFile)
+                            listener.onAlbumMediaItemCreationResult(success, album, media)
                         }
 
                         override fun onError(error: Error) {
@@ -544,7 +514,7 @@ class MediaUploader {
                                 return
                             }
 
-                            listener.onAlbumUploadCompleted(albumDir)
+                            listener.onAlbumUploadCompleted(album)
                         }
 
                         override fun onCanceled() {
