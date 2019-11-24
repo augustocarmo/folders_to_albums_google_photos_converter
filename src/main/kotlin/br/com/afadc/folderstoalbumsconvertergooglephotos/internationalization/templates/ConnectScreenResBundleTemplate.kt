@@ -8,6 +8,7 @@ abstract class ConnectScreenResBundleTemplate : ListResourceBundle(),
     IConnectScreenResBundleValues {
 
     final override fun getContents() = arrayOf(
+        kv(CREDENTIALS_INSTRUCTIONS_KEY, credentialsInstructions),
         kv(EMAIL_LABEL_KEY, emailLabel),
         kv(INVALID_EMAIL_POP_UP_MESSAGE_KEY, invalidEmailPopUpMessage),
         kv(INVALID_EMAIL_POP_UP_TITLE_KEY, invalidEmailPopUpTitle),
@@ -19,6 +20,7 @@ abstract class ConnectScreenResBundleTemplate : ListResourceBundle(),
     )
 
     companion object {
+        const val CREDENTIALS_INSTRUCTIONS_KEY = "credentials_instructions"
         const val EMAIL_LABEL_KEY = "email_label"
         const val INVALID_EMAIL_POP_UP_MESSAGE_KEY = "invalid_email_pop_up_message"
         const val INVALID_EMAIL_POP_UP_TITLE_KEY = "invalid_email_pop_up_title"

@@ -2,6 +2,7 @@ package br.com.afadc.folderstoalbumsconvertergooglephotos.internationalization.t
 
 interface IConnectScreenResBundleValues {
 
+    val credentialsInstructions: String
     val emailLabel: String
     val invalidEmailPopUpMessage: String
     val invalidEmailPopUpTitle: String

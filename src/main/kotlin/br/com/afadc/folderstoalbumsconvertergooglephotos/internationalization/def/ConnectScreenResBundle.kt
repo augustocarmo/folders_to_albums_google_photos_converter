@@ -8,6 +8,7 @@ class ConnectScreenResBundle : ConnectScreenResBundleTemplate() {
 
     class Bundle(private val rb: ResourceBundle) :
         IConnectScreenResBundleValues {
+        override val credentialsInstructions: String get() = rb.getString(CREDENTIALS_INSTRUCTIONS_KEY)
         override val emailLabel: String = rb.getString(EMAIL_LABEL_KEY)
         override val invalidEmailPopUpMessage: String = rb. getString(INVALID_EMAIL_POP_UP_MESSAGE_KEY)
         override val invalidEmailPopUpTitle: String = rb.getString(INVALID_EMAIL_POP_UP_TITLE_KEY)
@@ -18,8 +19,10 @@ class ConnectScreenResBundle : ConnectScreenResBundleTemplate() {
         override val wrongCredentialsFilePopUpTitle: String = rb.getString(WRONG_CREDENTIALS_FILE_POP_UP_TITLE_KEY)
     }
 
+    override val credentialsInstructions: String
+        get() = "You need to enter your email from Gmail and then select the Google credentials json file to be able to connect. For further info, please access <a href=\"https://github.com/augustocarmo/folders_to_albums_google_photos_converter\">this link.</a>"
     override val emailLabel: String
-        get() = "email: "
+        get() = "Email: "
     override val invalidEmailPopUpMessage: String
         get() = "Enter a valid email."
     override val invalidEmailPopUpTitle: String
