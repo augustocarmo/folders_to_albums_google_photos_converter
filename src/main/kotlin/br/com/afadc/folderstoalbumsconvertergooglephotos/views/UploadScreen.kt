@@ -23,9 +23,9 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
     private val middlePanel: JPanel
     private val bottomPanel: JPanel
 
-
     private val backButton: JButton
     private val userEmailLabel: JLabel
+    private val fetchingAlbumsLabel: JLabel
     private val albumsTreeView: JTree
     private val albumsTreeViewScrollablePane: JScrollPane
     private val uploadLogTextArea: JEditorPane
@@ -96,6 +96,9 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
                 .setInsets(Insets(0, 16, 0, 0))
                 .build()
         )
+
+        fetchingAlbumsLabel = JLabel(resBundle.fetchingAlbums)
+        middlePanel.add(fetchingAlbumsLabel)
 
         albumsTreeView = JTree()
         albumsTreeView.selectionModel =
@@ -186,6 +189,10 @@ class UploadScreen(private val resBundle: UploadScreenResBundle.Bundle) : JPanel
 
     fun setCancelUploadButtonVisibility(isVisible: Boolean) {
         cancelUploadButton.isVisible = isVisible
+    }
+
+    fun setFetchingAlbumsLabelVisibility(isVisible: Boolean) {
+        fetchingAlbumsLabel.isVisible = isVisible
     }
 
     fun setAlbumsTreeViewModel(model: TreeModel) {

@@ -10,6 +10,7 @@ abstract class UploadScreenResBundleTemplate: ListResourceBundle(),
     final override fun getContents() = arrayOf(
         kv(BACK_BUTTON_KEY, backButton),
         kv(CANCEL_MEDIA_UPLOAD_BUTTON_KEY, cancelMediaUploadButton),
+        kv(FETCHING_ALBUMS_KEY, fetchingAlbums),
         kv(EMAIL_LABEL_FORMAT_KEY, emailLabelFormat),
         kv(LOG_ON_MEDIA_ITEM_CREATION_FAILED_FORMAT_KEY, logOnMediaItemCreationFailedFormat),
         kv(LOG_ON_MEDIA_ITEM_CREATION_SUCCEEDED_FORMAT_KEY, logOnMediaItemCreationSucceededFormat),
@@ -30,8 +31,9 @@ abstract class UploadScreenResBundleTemplate: ListResourceBundle(),
 
     companion object {
         const val BACK_BUTTON_KEY = "back_button"
-        const val EMAIL_LABEL_FORMAT_KEY = "email_label_format"
         const val CANCEL_MEDIA_UPLOAD_BUTTON_KEY = "cancel_media_upload_button"
+        const val EMAIL_LABEL_FORMAT_KEY = "email_label_format"
+        const val FETCHING_ALBUMS_KEY = "fetching_albums"
         const val LOG_ON_MEDIA_UPLOAD_FAILED_KEY = "log_on_media_upload_failed"
         const val LOG_ON_MEDIA_UPLOAD_SUCCEEDED_KEY = "log_on_media_upload_succeeded"
         const val LOG_ON_MEDIA_ITEM_CREATION_FAILED_FORMAT_KEY = "log_on_media_item_creation_failed_format"

@@ -12,6 +12,7 @@ class UploadScreenResBundle : UploadScreenResBundleTemplate(),
         override val backButton: String = rb.getString(BACK_BUTTON_KEY)
         override val cancelMediaUploadButton: String = rb.getString(CANCEL_MEDIA_UPLOAD_BUTTON_KEY)
         override val emailLabelFormat: String = rb.getString(EMAIL_LABEL_FORMAT_KEY)
+        override val fetchingAlbums: String get() = rb.getString(FETCHING_ALBUMS_KEY)
         override val logOnMediaItemCreationFailedFormat: String = rb.getString(LOG_ON_MEDIA_ITEM_CREATION_FAILED_FORMAT_KEY)
         override val logOnMediaItemCreationSucceededFormat: String = rb.getString(
             LOG_ON_MEDIA_ITEM_CREATION_SUCCEEDED_FORMAT_KEY
@@ -43,6 +44,8 @@ class UploadScreenResBundle : UploadScreenResBundleTemplate(),
         get() = "Cancel Upload"
     override val emailLabelFormat: String
         get() = "E-mail: %s"
+    override val fetchingAlbums: String
+        get() = "Fetching albums..."
     override val logOnMediaItemCreationFailedFormat: String
         get() = "Fail on media creation [%s] on Google Photos!<br><br><br>"
     override val logOnMediaItemCreationSucceededFormat: String

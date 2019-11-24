@@ -5,6 +5,7 @@ interface IUploadScreenResBundleValues {
     val backButton: String
     val cancelMediaUploadButton: String
     val emailLabelFormat: String
+    val fetchingAlbums: String
     val logOnMediaItemCreationFailedFormat: String
     val logOnMediaItemCreationSucceededFormat: String
     val logOnMediaUploadedSucceeded: String

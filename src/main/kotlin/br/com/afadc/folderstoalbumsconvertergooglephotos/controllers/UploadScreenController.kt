@@ -26,6 +26,7 @@ class UploadScreenController(
 
     private enum class RenderingState {
         NONE,
+        LOADING_TREE_VIEW,
         SELECTING_MEDIA,
         UPLOADING_MEDIA
     }
@@ -34,13 +35,11 @@ class UploadScreenController(
         fun onDismissRequested()
     }
 
-    private var renderingState =
-        RenderingState.NONE
+    private var renderingState = RenderingState.NONE
 
     private val resBundle = AppResBundles.getUploadScreenBundle()
 
-    private val uploadScreen =
-        UploadScreen(resBundle)
+    private val uploadScreen = UploadScreen(resBundle)
 
     private var currentAlbumsUploadTask: MediaUploader.AlbumsUploadTask? = null
 
@@ -50,19 +49,14 @@ class UploadScreenController(
 
     private val albumsUploadTaskListener: MediaUploader.AlbumsUploadTaskListener
 
+    private val fileNodesCreator = FileNodesCreator()
+    private var currentFileNodesCreatorTask: FileNodesCreator.FileNodesCreatorTask? = null
+    private val currentFileNodesCreatorTaskListener: FileNodesCreator.FileNodesCreatorTaskListener
+
     var listener: Listener? = null
 
     init {
         uploadScreen.setUserEmail(userEmail)
-
-        uploadScreen.setAlbumsTreeViewModel(
-            DefaultTreeModel(
-                FileNodesCreator().createFrom(
-                    albumsDirectoryFile,
-                    MediaUploader.ALL_VALID_EXTENSIONS
-                )
-            )
-        )
 
         uploadScreen.listener = object : UploadScreen.Listener {
             override fun onBackButtonClicked() {
@@ -82,9 +76,26 @@ class UploadScreenController(
             }
         }
 
+        currentFileNodesCreatorTaskListener = object : FileNodesCreator.FileNodesCreatorTaskListener {
+            override fun onCompleted(rootNode: DefaultMutableTreeNode) {
+                SwingUtilities.invokeLater {
+                    val albumsTreeViewModel = DefaultTreeModel(rootNode)
+                    uploadScreen.setAlbumsTreeViewModel(albumsTreeViewModel)
+
+                    setRenderingState(RenderingState.SELECTING_MEDIA)
+                }
+            }
+
+            override fun onCanceled() {
+                // do nothing
+            }
+        }
+
         albumsUploadTaskListener = object : MediaUploader.AlbumsUploadTaskListener {
             override fun onWillUploadAlbum(albumDir: File) {
-                // TODO:
+                SwingUtilities.invokeLater {
+                    // TODO:
+                }
             }
 
             override fun onWWillUploadAlbumMedia(albumDir: File, mediaFile: File) {
@@ -137,7 +148,9 @@ class UploadScreenController(
             }
 
             override fun onAlbumUploadCompleted(albumDir: File) {
-                // TODO:
+                SwingUtilities.invokeLater {
+                    // TODO:
+                }
             }
 
             override fun onError(error: MediaUploader.Error) {
@@ -177,6 +190,8 @@ class UploadScreenController(
                 }
             }
         }
+
+        setupAlbumsTreeViewContent()
     }
 
     override fun show() {
@@ -187,7 +202,31 @@ class UploadScreenController(
         appFrame.repaint()
     }
 
+    private fun setupAlbumsTreeViewContent() {
+        setRenderingState(RenderingState.LOADING_TREE_VIEW)
+
+        cancelCurrentFileNodesCreatorTask()
+
+        Thread {
+            val newFilesNodeCreatorTask = fileNodesCreator.createFileNodesCreatorTask(
+                albumsDirectoryFile,
+                MediaUploader.ALL_VALID_EXTENSIONS
+            )
+            currentFileNodesCreatorTask = newFilesNodeCreatorTask
+            fileNodesCreator.executeFileNodesCreatorTask(
+                newFilesNodeCreatorTask,
+                currentFileNodesCreatorTaskListener
+            )
+        }.start()
+    }
+
+    private fun cancelCurrentFileNodesCreatorTask() {
+        currentAlbumsUploadTask?.cancel()
+        currentAlbumsUploadTask = null
+    }
+
     private fun onBeforeSettingRenderingState() {
+        uploadScreen.setFetchingAlbumsLabelVisibility(false)
         uploadScreen.setAlbumsTreeViewScrollablePaneVisibility(false)
         uploadScreen.setUploadLogTextAreaScrollablePaneVisibility(false)
         uploadScreen.setUploadButtonVisibility(false)
@@ -199,11 +238,16 @@ class UploadScreenController(
 
         when (renderingState) {
             RenderingState.NONE -> Unit // do nothing
+            RenderingState.LOADING_TREE_VIEW -> applyLoadingTreeViewRenderingState()
             RenderingState.SELECTING_MEDIA -> applySelectingMediaRenderingState()
             RenderingState.UPLOADING_MEDIA -> applyUploadingMediaRenderingState()
         }
 
         this.renderingState = renderingState
+    }
+
+    private fun applyLoadingTreeViewRenderingState() {
+        uploadScreen.setFetchingAlbumsLabelVisibility(true)
     }
 
     private fun applySelectingMediaRenderingState() {
@@ -217,6 +261,7 @@ class UploadScreenController(
     }
 
     private fun dismiss() {
+        cancelCurrentFileNodesCreatorTask()
         cancelMediaUpload()
 
         listener?.onDismissRequested()

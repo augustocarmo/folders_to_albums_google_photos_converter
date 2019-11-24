@@ -55,6 +55,7 @@ class MediaUploader {
         var isCanceled = false
             private set
 
+        @Synchronized
         fun cancel() {
             if (isCanceled) {
                 return

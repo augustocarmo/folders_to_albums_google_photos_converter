@@ -5,6 +5,56 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 class FileNodesCreator {
 
+    interface FileNodesCreatorTaskListener {
+
+        fun onCompleted(rootNode: DefaultMutableTreeNode)
+        fun onCanceled()
+    }
+
+    class FileNodesCreatorTask(
+        val rootFile: File,
+        val validExtensions: Array<String>
+    ) {
+
+        interface CancelListener {
+            fun onCanceled()
+        }
+
+        private var cancelListeners = ArrayList<CancelListener>()
+
+        var isCanceled = false
+            private set
+
+        @Synchronized
+        fun cancel() {
+            if (isCanceled) {
+                return
+            }
+
+            synchronized(cancelListeners) {
+                for (listener in cancelListeners.toList()) {
+                    listener.onCanceled()
+                }
+            }
+        }
+
+        fun addCancelListener(listener: CancelListener) {
+            synchronized(cancelListeners) {
+                if (cancelListeners.contains(listener)) {
+                    return
+                }
+
+                cancelListeners.add(listener)
+            }
+        }
+
+        fun removeCancelListener(listener: CancelListener) {
+            synchronized(cancelListeners) {
+                cancelListeners.remove(listener)
+            }
+        }
+    }
+
     class FileNode(val file: File, val isRoot: Boolean) {
 
         var photoCount = 0
@@ -22,29 +72,65 @@ class FileNodesCreator {
         }
     }
 
-    fun createFrom(file: File, validExtensions: Array<String>): DefaultMutableTreeNode {
-        val rootNode = DefaultMutableTreeNode(
-            FileNode(
-                file,
-                true
+    fun createFileNodesCreatorTask(rootFile: File, validExtensions: Array<String>): FileNodesCreatorTask {
+        return FileNodesCreatorTask(rootFile, validExtensions)
+    }
+
+    fun executeFileNodesCreatorTask(task: FileNodesCreatorTask, listener: FileNodesCreatorTaskListener) {
+        val taskCancelListener = object : FileNodesCreatorTask.CancelListener {
+            override fun onCanceled() {
+                listener.onCanceled()
+            }
+        }
+        task.addCancelListener(taskCancelListener)
+
+        try {
+            if (task.isCanceled) {
+                return
+            }
+
+            val rootFile = task.rootFile
+            val validExtensions = task.validExtensions.copyOf()
+
+            val rootNode = DefaultMutableTreeNode(
+                FileNode(
+                    rootFile,
+                    true
+                )
             )
-        )
 
-        createChildrenNodesFrom(
-            file,
-            rootNode,
-            validExtensions.map { it.toLowerCase() }.toTypedArray()
-        )
+            if (task.isCanceled) {
+                return
+            }
 
-        return rootNode
+            createChildrenNodesFrom(
+                task,
+                rootFile,
+                rootNode,
+                validExtensions.map { it.toLowerCase() }.toTypedArray()
+            )
+
+            if (task.isCanceled) {
+                return
+            }
+
+            listener.onCompleted(rootNode)
+        } finally {
+            task.removeCancelListener(taskCancelListener)
+        }
     }
 
     private fun createChildrenNodesFrom(
+        task: FileNodesCreatorTask,
         file: File,
         node: DefaultMutableTreeNode,
         validExtensions: Array<String>
     ): Int {
         var photoCount = 0
+
+        if (task.isCanceled) {
+            return photoCount
+        }
 
         val childrenFiles = file.listFiles()
         if (childrenFiles == null) {
@@ -58,7 +144,15 @@ class FileNodesCreator {
             )
         )
 
+        if (task.isCanceled) {
+            return photoCount
+        }
+
         for (childFile in childrenFiles) {
+            if (task.isCanceled) {
+                return photoCount
+            }
+
             if (childFile.isFile) {
                 val childFileExtension = childFile.extension
                 if (childFileExtension.isEmpty() || !validExtensions.contains(childFile.extension.toLowerCase())) {
@@ -77,7 +171,7 @@ class FileNodesCreator {
             node.add(childNode)
 
             if (file.isDirectory) {
-                photoCount += createChildrenNodesFrom(childFile, childNode, validExtensions)
+                photoCount += createChildrenNodesFrom(task, childFile, childNode, validExtensions)
             }
         }
 
