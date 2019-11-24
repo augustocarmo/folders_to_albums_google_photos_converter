@@ -281,7 +281,7 @@ class UploadScreenController(
 
         val albumCount = selectedNodes.count()
         val photoCount = selectedNodes.fold(0, { acc, node ->
-            return@fold acc + (node.userObject as FileNodesCreator.FileNode).photoCount
+            return@fold acc + (node.userObject as FileNodesCreator.FileNode).mediaCount
         })
 
         uploadScreen.setUploadButtonText(

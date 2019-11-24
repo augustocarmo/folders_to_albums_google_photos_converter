@@ -61,17 +61,17 @@ class FileNodesCreator {
 
     class FileNode(val file: File, val isRoot: Boolean) {
 
-        var photoCount = 0
+        var mediaCount = 0
 
         override fun toString(): String {
             return if (!isRoot) {
                 if (file.isFile) {
                     file.name
                 } else {
-                    "[$photoCount] ${file.name}"
+                    "[$mediaCount] ${file.name}"
                 }
             } else {
-                "[$photoCount] ${file.absolutePath}"
+                "[$mediaCount] ${file.absolutePath}"
             }
         }
     }
@@ -134,47 +134,42 @@ class FileNodesCreator {
         node: DefaultMutableTreeNode,
         validExtensions: Array<String>
     ): Int {
-        var photoCount = 0
+        var mediaCount = 0
 
         if (task.isCanceled) {
-            return photoCount
+            return 0
         }
 
         val childrenFiles = file.listFiles()
         if (childrenFiles == null) {
-            return photoCount
+            return 0
         }
-
-        childrenFiles.sortWith(
-            compareBy(
-                { if (it.isDirectory) 0 else 1 },
-                { it.name }
-            )
-        )
 
         if (task.isCanceled) {
-            return photoCount
+            return 0
         }
 
-        photoCount += childrenFiles.mapNotNull { childFile ->
+        val childrenNodesToAdd = ArrayList<DefaultMutableTreeNode>()
+
+        mediaCount += childrenFiles.mapNotNull { childFile ->
             if (task.isCanceled) {
                 return@mapNotNull null
             }
 
             GlobalScope.async {
-                var childFilePhotoCount = 0
+                var childFileMediaCount = 0
 
                 if (task.isCanceled) {
-                    return@async childFilePhotoCount
+                    return@async 0
                 }
 
                 if (childFile.isFile) {
                     val childFileExtension = childFile.extension
                     if (childFileExtension.isEmpty() || !validExtensions.contains(childFile.extension.toLowerCase())) {
-                        return@async childFilePhotoCount
+                        return@async 0
                     }
 
-                    childFilePhotoCount += 1
+                    childFileMediaCount += 1
                 }
 
                 val childNode = DefaultMutableTreeNode(
@@ -184,32 +179,53 @@ class FileNodesCreator {
                     )
                 )
 
-                synchronized(task) {
-                    node.add(childNode)
-                }
-
                 if (childFile.isDirectory) {
-                    childFilePhotoCount += createChildrenNodesFrom(task, childFile, childNode, validExtensions)
+                    childFileMediaCount += createChildrenNodesFrom(task, childFile, childNode, validExtensions)
                 }
 
-                return@async childFilePhotoCount
+                if (childFileMediaCount > 0) {
+                    synchronized(node) {
+                        childrenNodesToAdd.add(childNode)
+                    }
+                }
+
+                return@async childFileMediaCount
             }
         }.sumBy {
             it.await()
         }
 
         if (task.isCanceled) {
-            return photoCount
+            return 0
         }
 
-        if (photoCount == 0) {
-            synchronized(task) {
+        childrenNodesToAdd.sortWith(
+            compareBy(
+                { if ((it.userObject as FileNode).file.isDirectory) 0 else 1 },
+                { (it.userObject as FileNode).file.name.toLowerCase() }
+            )
+        )
+
+        if (task.isCanceled) {
+            return 0
+        }
+
+        synchronized(task) {
+            if (mediaCount > 0) {
+                for (childNode in childrenNodesToAdd) {
+                    node.add(childNode)
+                }
+            } else {
                 node.removeFromParent()
             }
         }
 
-        (node.userObject as FileNode).photoCount = photoCount
+        if (task.isCanceled) {
+            return 0
+        }
 
-        return photoCount
+        (node.userObject as FileNode).mediaCount = mediaCount
+
+        return mediaCount
     }
 }
