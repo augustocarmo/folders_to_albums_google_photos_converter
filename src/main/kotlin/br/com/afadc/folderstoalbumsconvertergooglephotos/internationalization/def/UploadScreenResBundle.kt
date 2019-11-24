@@ -25,8 +25,8 @@ class UploadScreenResBundle : UploadScreenResBundleTemplate(),
             get() = rb.getString(NO_ALBUMS_DIRECTORIES_POP_UP_MESSAGE_KEY)
         override val noAlbumsDirectoriesPopUpTitle: String
             get() = rb.getString(NO_ALBUMS_DIRECTORIES_POP_UP_TITLE_KEY)
-        override val noMediaSelectedPopUpMessage: String = rb.getString(NO_MEDIA_SELECTED_POP_UP_MESSAGE_KEY)
-        override val noMediaSelectedPopUpTitle: String = rb.getString(NO_MEDIA_SELECTED_POP_UP_TITLE_KEY)
+        override val noAlbumsSelectedToUploadPopUpMessage: String = rb.getString(NO_ALBUMS_SELECTED_TO_UPLOAD_POP_UP_MESSAGE_KEY)
+        override val noAlbumsSelectedToUploadPopUpTitle: String = rb.getString(NO_ALBUMS_SELECTED_TO_UPLOAD_POP_UP_TITLE_KEY)
         override val uploadMediaButtonZeroMediaCount: String = rb.getString(UPLOAD_MEDIA_BUTTON_ZERO_MEDIA_COUNT_KEY)
         override val uploadMediaButtonNonZeroMediaCountFormat: String =
             rb.getString(UPLOAD_MEDIA_BUTTON_NON_ZERO_MEDIA_COUNT_FORMAT_KEY)
@@ -66,9 +66,9 @@ class UploadScreenResBundle : UploadScreenResBundleTemplate(),
         get() = "There are no albums directories in the selected directory (or they have no medias)"
     override val noAlbumsDirectoriesPopUpTitle: String
         get() = "Missing Albums Directories"
-    override val noMediaSelectedPopUpMessage: String
-        get() = "No media has been selected"
-    override val noMediaSelectedPopUpTitle: String
+    override val noAlbumsSelectedToUploadPopUpMessage: String
+        get() = "No albums were selected to be uploaded"
+    override val noAlbumsSelectedToUploadPopUpTitle: String
         get() = "Failed to Upload"
     override val uploadMediaButtonZeroMediaCount: String
         get() = "Upload Medias"

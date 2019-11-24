@@ -15,8 +15,8 @@ interface IUploadScreenResBundleValues {
     val logStartingToUploadMedias: String
     val noAlbumsDirectoriesPopUpMessage: String
     val noAlbumsDirectoriesPopUpTitle: String
-    val noMediaSelectedPopUpMessage: String
-    val noMediaSelectedPopUpTitle: String
+    val noAlbumsSelectedToUploadPopUpMessage: String
+    val noAlbumsSelectedToUploadPopUpTitle: String
     val uploadMediaButtonZeroMediaCount: String
     val uploadMediaButtonNonZeroMediaCountFormat: String
     val uploadMediaErrorPopUpAlbumCreationFailedMessage: String

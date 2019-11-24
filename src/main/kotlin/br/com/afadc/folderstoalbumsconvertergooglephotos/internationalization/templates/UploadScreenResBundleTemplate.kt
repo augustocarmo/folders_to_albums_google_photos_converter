@@ -21,8 +21,8 @@ abstract class UploadScreenResBundleTemplate: ListResourceBundle(),
         kv(LOG_STARTING_TO_UPLOAD_MEDIAS_KEY, logStartingToUploadMedias),
         kv(NO_ALBUMS_DIRECTORIES_POP_UP_MESSAGE_KEY, noAlbumsDirectoriesPopUpMessage),
         kv(NO_ALBUMS_DIRECTORIES_POP_UP_TITLE_KEY, noAlbumsDirectoriesPopUpTitle),
-        kv(NO_MEDIA_SELECTED_POP_UP_MESSAGE_KEY, noMediaSelectedPopUpMessage),
-        kv(NO_MEDIA_SELECTED_POP_UP_TITLE_KEY, noMediaSelectedPopUpTitle),
+        kv(NO_ALBUMS_SELECTED_TO_UPLOAD_POP_UP_MESSAGE_KEY, noAlbumsSelectedToUploadPopUpMessage),
+        kv(NO_ALBUMS_SELECTED_TO_UPLOAD_POP_UP_TITLE_KEY, noAlbumsSelectedToUploadPopUpTitle),
         kv(UPLOAD_MEDIA_BUTTON_ZERO_MEDIA_COUNT_KEY, uploadMediaButtonZeroMediaCount),
         kv(UPLOAD_MEDIA_BUTTON_NON_ZERO_MEDIA_COUNT_FORMAT_KEY, uploadMediaButtonNonZeroMediaCountFormat),
         kv(UPLOAD_MEDIA_ERROR_POP_UP_ALBUM_CREATION_FAILED_MESSAGE_KEY, uploadMediaErrorPopUpAlbumCreationFailedMessage),
@@ -44,8 +44,8 @@ abstract class UploadScreenResBundleTemplate: ListResourceBundle(),
         const val LOG_ON_WILL_UPLOAD_MEDIA_FORMAT_KEY = "log_on_will_upload_media_format"
         const val NO_ALBUMS_DIRECTORIES_POP_UP_MESSAGE_KEY = "no_albums_directories_pop_up_message"
         const val NO_ALBUMS_DIRECTORIES_POP_UP_TITLE_KEY = "no_albums_directories_pop_up_title"
-        const val NO_MEDIA_SELECTED_POP_UP_MESSAGE_KEY = "no_media_selected_pop_up_message"
-        const val NO_MEDIA_SELECTED_POP_UP_TITLE_KEY = "no_media_selected_pop_up_title"
+        const val NO_ALBUMS_SELECTED_TO_UPLOAD_POP_UP_MESSAGE_KEY = "no_albums_selected_to_upload_pop_up_message"
+        const val NO_ALBUMS_SELECTED_TO_UPLOAD_POP_UP_TITLE_KEY = "no_albums_selected_to_upload_pop_up_title"
         const val LOG_STARTING_TO_UPLOAD_MEDIAS_KEY = "log_starting_to_upload_medias"
         const val UPLOAD_MEDIA_BUTTON_NON_ZERO_MEDIA_COUNT_FORMAT_KEY = "upload_media_button_non_zero_media_count_format"
         const val UPLOAD_MEDIA_BUTTON_ZERO_MEDIA_COUNT_KEY = "upload_media_button_zero_media_count"

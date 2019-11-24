@@ -312,8 +312,8 @@ class UploadScreenController(
 
             JOptionPane.showMessageDialog(
                 appFrame,
-                resBundle.noMediaSelectedPopUpMessage,
-                resBundle.noMediaSelectedPopUpTitle,
+                resBundle.noAlbumsSelectedToUploadPopUpMessage,
+                resBundle.noAlbumsSelectedToUploadPopUpTitle,
                 JOptionPane.WARNING_MESSAGE
             )
 
