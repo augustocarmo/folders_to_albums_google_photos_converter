@@ -3,8 +3,6 @@ package br.com.afadc.folderstoalbumsconvertergooglephotos.db
 import br.com.afadc.folderstoalbumsconvertergooglephotos.db.entities.DbAlbum
 import br.com.afadc.folderstoalbumsconvertergooglephotos.db.entities.DbMedia
 import java.io.File
-import java.lang.IllegalArgumentException
-import java.lang.RuntimeException
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.Types
@@ -152,6 +150,25 @@ class AppDatabase(private val dbDir: File) {
         }
     }
 
+    fun getUploadedAndCreatedDbMediasPaths(): ArrayList<String> {
+        val result = ArrayList<String>(1024)
+
+        val query = """
+           SELECT
+            ("${dbDir.absolutePath + "/"}" || path) as path
+            FROM
+            medias
+            WHERE is_uploaded_and_created = 1
+        """
+
+        val preparedStatement = conn.prepareStatement(query)
+        val rs = preparedStatement.executeQuery()
+        while (rs.next()) {
+            result.add(rs.getString("path"))
+        }
+
+        return result
+    }
 
     fun insertOrUpdateMedia(dbMedia: DbMedia) {
         if (getDbMediaByFile(File(dbDir, dbMedia.path)) == null) {

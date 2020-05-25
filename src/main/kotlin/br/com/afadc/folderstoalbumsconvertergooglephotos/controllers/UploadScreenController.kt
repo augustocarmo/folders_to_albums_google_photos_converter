@@ -322,6 +322,7 @@ class UploadScreenController(
             return
         }
 
+        val alreadyUploadedAndCreatedMediaPaths = appDatabase.getUploadedAndCreatedDbMediasPaths()
         val albums = ArrayList<Album>()
 
         for (selectedTreePath in selectedTreePaths) {
@@ -334,7 +335,7 @@ class UploadScreenController(
                 val nextNode = (albumEnumeration.nextElement() as DefaultMutableTreeNode)
                 val file = (nextNode.userObject as FileNodesCreator.FileNode).file
 
-                if (file.isFile) {
+                if (file.isFile && !alreadyUploadedAndCreatedMediaPaths.contains(file.absolutePath)) {
                     mediaFiles.add(Media(file))
                 }
             }
